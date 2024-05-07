@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle</title>
+</head>
+<body>
+    
+    <style>
+        input {
+            width: 50px;
+            height: 50px;
+            font-size: 40px;
+            text-align: center;
+        }
+        .Replay {
+            display: none;
+        }
+    </style>
+
+    <input type='text' maxlength='1' class="input" id="first">
+    <input type='text' maxlength='1' class="input" id="second">
+    <input type='text' maxlength='1' class="input" id="third">
+    <input type='text' maxlength='1' class="input" id="fourth">
+    <input type='text' maxlength='1' class="input" id="fifth">
+    <div></div>
+    <br><button class="Submit">Submit</button>
+    <button class="Replay">Replay</button>
+
+    <script>
+
+        var firstInput = document.getElementById('first');
+        firstInput.focus();
+        
+        var idx = Math.floor(Math.random() * 50);
+        var ans;
+
+        fetch('../data/words.json')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                ans = data[idx];
+                console.log(ans);
+            });
+
+        document.querySelector('.Submit').addEventListener('click',
+        function(){
+    
+            var input = document.querySelectorAll('.input');
+            var isInputMissing = false;
+            var isCorrect = 0;
+
+            for (let i = 0; i < 5; i++) {
+                if(input[i].value === "") {
+                    alert("User input are missing.");
+                    input[0].value = "";
+                    input[1].value = "";
+                    input[2].value = "";
+                    input[3].value = "";
+                    input[4].value = "";
+                    firstInput.focus();
+                    isInputMissing = true;
+                    break;
+                }
+            }
+            if(isInputMissing) {return;}
+
+            for (let i = 0; i < 5; i++) {
+
+                //if same char is in and same positon color green
+                if(input[i].value == ans[i]){
+                    input[i].style.background = 'green';
+                    isCorrect++;
+                }else if(ans.includes(input[i].value)) { //if same char is in but not same pos
+                    input[i].style.background = 'yellow';
+                    isCorrect = 0;
+                }else {
+                    input[i].style.background = 'lightgrey';
+                    isCorrect = 0;
+                }
+
+                input[i].classList.remove('input');
+                input[i].removeAttribute('id');
+
+            }
+            if(isCorrect == 5) {
+                alert("Congratulations!");
+                document.querySelector('.Submit').style.display = 'none';
+                document.querySelector('.Replay').style.display = 'block';
+                return;
+            }
+
+            var template = `<div class="new">
+                <input type='text' maxlength='1' class="input" id="first">
+                <input type='text' maxlength='1' class="input" id="second">
+                <input type='text' maxlength='1' class="input" id="third">
+                <input type='text' maxlength='1' class="input" id="fourth">
+                <input type='text' maxlength='1' class="input" id="fifth">
+            </div>`
+            document.querySelector('br').insertAdjacentHTML('beforebegin', template);
+
+            document.querySelectorAll('.input').forEach(function(input, index, inputs) {
+                input.addEventListener('input', function() {
+                    if (input.value != "" && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    } else if (input.value == "" && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                });
+                input.addEventListener('keypress', function(event) {
+                    if (event.keyCode === 13) {
+                        document.querySelector('.Submit').click();
+                    }
+                });
+            });
+
+            firstInput = document.getElementById('first');
+            firstInput.focus();
+        })
+
+        document.querySelectorAll('.input').forEach(function(input, index, inputs) {
+            input.addEventListener('input', function() {
+                if (input.value != "" && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                } else if (input.value == "" && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+            input.addEventListener('keypress', function(event) {
+                if (event.keyCode === 13) {
+                    document.querySelector('.Submit').click();
+                }
+            });
+        });
+
+        document.querySelector('.Replay').addEventListener('click',
+        function(){
+            location.reload(true);
+        })
+    </script>
+
+</body>
+</html>
